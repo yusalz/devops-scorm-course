@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="HandheldFriendly" content="true" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="white">
+    <title>Course</title>
+    <style type="text/css">
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            margin: 0;
+        }
+
+        #scormIframe {
+            flex-grow: 1;
+            max-height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <iframe id="scormIframe" name="unpassed" style="border: none; height: 100%"></iframe>
+    <script type="text/javascript">
+
+        function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+        function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+        function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+        var ScormBridge = /*#__PURE__*/function () {
+          function ScormBridge() {
+            _classCallCheck(this, ScormBridge);
+          }
+
+          _createClass(ScormBridge, [{
+            key: "init",
+            value: function init() {
+              this.initialized = true;
+              this.errors = [];
+              this.store = [];
+              window.API = this;
+              window.API_1484_11 = this;
+              this.debug('SCORM Bridge initialized');
+              this.debug('SCORM Bridge initialized, window.API =', this);
+            }
+          }, {
+            key: "debug",
+            value: function debug() {
+              var _console;
+
+              (_console = console).log.apply(_console, arguments);
+            }
+          }, {
+            key: "onStoreChanged",
+            value: function onStoreChanged() {
+              var _this = this;
+
+              // Вызываем после изменения данных в Store, для реализации функции автосохранения с задержкой
+              // Возможно в будущем понадобится это отключать, для этого надо будет добавить опцию
+              if (this.saveStoreTimer) {
+                clearTimeout(this.saveStoreTimer);
+              }
+
+              this.saveStoreTimer = setTimeout(function () {
+                // this.debug('autosave store');
+                _this.sendStore();
+
+                _this.saveStoreTimer = undefined;
+              }, 500);
+            }
+          }, {
+            key: "sendStore",
+            value: function sendStore() {// this.debug('fake sending store:', this.store);
+            }
+          }, {
+            key: "interceptSetValue",
+            value: function interceptSetValue(key, value) {
+              // this.debug('fake interceptSetValue:', key, value);
+              if (/(?:cmi.success_status|cmi.core.lesson_status)/.test(key)) {
+                switch (value) {
+                  case 'passed':
+                    // Отправляем passed
+                    window.top.postMessage('passed', '*');
+                    break;
+
+                  case 'failed':
+                    // Отправляем failed
+                    break;
+                }
+              }
+            }
+          }]);
+
+          return ScormBridge;
+        }();
+        /**
+         * Вызыает функцию только в том случае, если бридж проинициализирован
+         *
+         * initialized :: (Any... -> String) -> Any... -> String
+         */
+
+
+        function initialized(func) {
+          return function () {
+            for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+              args[_key] = arguments[_key];
+            }
+
+            return this.initialized ? func.call.apply(func, [this].concat(args)) : 'false';
+          };
+        }
+        /**
+         * Перехватывает ошибки, брошенные функцией, и записывает их во внутренний массив
+         * Эти ошибки будут возвращены при помощи вызовов SCORM API: LMSGetLastError, LMSGetErrorString, LMSGetDiagnostic
+         */
+
+
+        function withErrorsCaught(func) {
+          return function () {
+            try {
+              for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                args[_key2] = arguments[_key2];
+              }
+
+              return func.call.apply(func, [this].concat(args));
+            } catch (error) {
+              this.errors.push({
+                code: -1,
+                message: error.message
+              });
+              return 'false';
+            }
+          };
+        }
+
+        ScormBridge.prototype.LMSInitialize = ScormBridge.prototype.Initialize = initialized(withErrorsCaught(function () {
+          // this.debug('ScormBridge initialized by course');
+          return 'true';
+        }));
+        ScormBridge.prototype.LMSGetValue = ScormBridge.prototype.GetValue = initialized(withErrorsCaught(function (key) {
+          var value = this.store.hasOwnProperty(key) ? this.store[key] : ''; // this.debug(`ScormBridge has got \`${value}\` for \`${key}\``);
+
+          return value;
+        }));
+        ScormBridge.prototype.LMSSetValue = ScormBridge.prototype.SetValue = initialized(withErrorsCaught(function (key, value) {
+          this.store[key] = value; // this.debug(`ScormBridge has set \`${value}\` for \`${key}\``);
+
+          this.interceptSetValue(key, value);
+          this.onStoreChanged();
+          return 'true';
+        }));
+        ScormBridge.prototype.LMSCommit = ScormBridge.prototype.Commit = initialized(function () {
+          this.sendStore(); // this.debug('ScormBridge has commited');
+
+          return 'true';
+        });
+        ScormBridge.prototype.LMSFinish = ScormBridge.prototype.Finish = ScormBridge.prototype.Terminate = initialized(withErrorsCaught(function () {
+          this.initialized = false;
+          return 'true';
+        }));
+        ScormBridge.prototype.LMSGetLastError = ScormBridge.prototype.GetLastError = initialized(function () {
+          if (this.errors.length > 0) {
+            return this.errors[this.errors.length - 1].code;
+          }
+
+          return 0;
+        });
+        ScormBridge.prototype.LMSGetErrorString = ScormBridge.prototype.GetErrorString = ScormBridge.prototype.LMSGetDiagnostic = ScormBridge.prototype.GetDiagnostic = initialized(function () {
+          if (this.errors.length > 0) {
+            return this.errors[this.errors.length - 1].message;
+          }
+
+          return '';
+        });
+        var scormBridge = new ScormBridge();
+        scormBridge.init(); // Подставка страницы запуска скорма
+
+        function parseUri (str) {
+            var o   = parseUri.options,
+                m   = o.parser[o.strictMode ? "strict" : "loose"].exec(str),
+                uri = {},
+                i   = 14;
+
+            while (i--) uri[o.key[i]] = m[i] || "";
+
+            uri[o.q.name] = {};
+            uri[o.key[12]].replace(o.q.parser, function ($0, $1, $2) {
+                if ($1) uri[o.q.name][$1] = $2;
+            });
+
+            return uri;
+        };
+
+        parseUri.options = {
+            strictMode: false,
+            key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
+            q:   {
+                name:   "queryKey",
+                parser: /(?:^|&)([^&=]*)=?([^&]*)/g
+            },
+            parser: {
+                strict: /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,
+                loose:  /^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/
+            }
+        };
+
+        parseUri.options.strictMode = true;
+
+
+        // console.log(new URL(document.location).searchParams)
+        console.log(parseUri(document.location))
+        // parseUri(document.location).source
+        var scormLaunchPath = parseUri(document.location).queryKey.scormLaunchPath;
+        // var scormLaunchPath = params.get('scormLaunchPath');
+        var iframe = document.getElementById('scormIframe');
+        iframe.src = scormLaunchPath;
+    </script>
+</body>
+
+</html>

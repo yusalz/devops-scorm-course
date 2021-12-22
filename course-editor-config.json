@@ -1,0 +1,29 @@
+{
+    "available-templates": [
+        "EC_Template_Text",
+        "EC_Template_Image",
+        "EC_Template_Picfont",
+        "EC_Template_Important",
+        "EC_Template_Separator"
+    ],
+    "css-variables": {
+        "ce-global-course-vertical-rhythm" : 8,
+        "ce-global-main-desktop-font-size": "16px",
+        "ce-global-main-desktop-line-height": "24px",
+        "ce-global-main-mobile-font-size": "12px",
+        "ce-global-main-mobile-line-height": "16px",
+        "ce-global-heading-desktop-font-size": "40px",
+        "ce-global-heading-desktop-line-height": "54px",
+        "ce-global-heading-mobile-font-size": "30px",
+        "ce-global-heading-mobile-line-height": "40px",
+        "ce-global-sub-heading-desktop-font-size": "24px",
+        "ce-global-sub-heading-desktop-line-height": "36px",
+        "ce-global-sub-heading-mobile-font-size": "18px",
+        "ce-global-sub-heading-mobile-line-height": "24px",
+        "ce-global-xl-container-width": "1200px",
+        "ce-global-lg-container-width": "1200px",
+        "ce-global-md-container-width": "900px",
+        "ce-global-sm-container-width": "1200px",
+        "ce-global-xs-container-width": "1200px"
+    }
+}

@@ -1,0 +1,54 @@
+[
+    {
+        "name": "course",
+        "version": "0.1.2"
+    },
+    {
+        "name": "course-scorm",
+        "version": "1.0.1",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-structure",
+        "version": "2.5.4",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-structure-converter",
+        "version": "2.2.1",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-structure-debugger",
+        "version": "1.0.3",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-templates",
+        "version": "0.11.5",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-ui",
+        "version": "1.2.2",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-utils",
+        "version": "1.0.0",
+        "commitHash": "package-dev",
+        "branch": "default"
+    },
+    {
+        "name": "course-xapi",
+        "version": "2.9.2",
+        "commitHash": "package-dev",
+        "branch": "default"
+    }
+]
